@@ -12,6 +12,8 @@ public class Main {
 
     static HashMap<String, User> users = new HashMap<>();
     static ArrayList<Book> books = new ArrayList<>();
+
+    // @Doug: sorry for using a global variable
     static int counter = 0;
 
     public static void main(String[] args){
@@ -163,29 +165,54 @@ public class Main {
         Spark.post(
                 "/edit",
                 (request, response) -> {
-                    response.redirect("editbook.mustache/?bookId="+request.queryParams("bookId"));
+                    String newTitle = request.queryParams("title");
+                    String newAuthor = request.queryParams("author");
+                    String newGenre = request.queryParams("genre");
+                    int editId = Integer.valueOf(request.queryParams("bookId"));
+                    Book book;
+
+                    for (int i = 0; i < books.size(); i++){
+                        if (books.get(i).bookId == editId) {
+                            book = books.get(i);
+                            if(!newTitle.equals("")){
+                                book.setTitle(newTitle);
+                            }
+
+                            if(!newAuthor.equals("")){
+                                book.setAuthor(newAuthor);
+                            }
+
+                            if(!newGenre.equals("")){
+                                book.setGenre(newGenre);
+                            }
+                        }
+                    }
+
+
+
+
+                    response.redirect("/");
                     halt();
 
                     return "";
                 }
         );
 
-        /*Spark.get(
+        Spark.get(
                 "/edit",
                 (request, response) -> {
 
-                    int editId = Integer.valueOf(request.queryParams("messageId"));
+                    HashMap m = new HashMap();
+                    int editId = Integer.valueOf(request.queryParams("bookId"));
+                    Book book = books.get(editId);
 
-                    books.remove(editId);
-                    books.add(editId, editMessage);
+                    m.put("book", book);
 
-                    // redirect to webroot
-                    response.redirect("/");
-                    halt();
 
-                    return "";
-                }
-        );*/
+                    return new ModelAndView(m, "/editbook.mustache");
+                },
+                new MustacheTemplateEngine()
+        );
 
         Spark.get(
                 "/logout",
